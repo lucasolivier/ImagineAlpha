@@ -14,7 +14,6 @@ C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\Emgu.CV.UI.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\Emgu.CV.UI.GL.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\Emgu.CV.World.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\Microsoft.VisualStudio.DebuggerVisualizers.xml
-C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.Form1.resources
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.Properties.Resources.resources
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.csproj.GenerateResource.Cache
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.exe
@@ -45,3 +44,5 @@ C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\haarcascade_profil
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\haarcascade_righteye_2splits (2).xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\haarcascade_righteye_2splits.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\frontalEyes35x16.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.Form1.resources
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.HistogramForm.resources

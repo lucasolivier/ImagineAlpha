@@ -397,227 +397,19 @@ namespace ImagineAlpha
             //If the face keep invalid, put the face line on the middle of the face square
             if(!isValid)
             {
-                faceLineSlope = double.MaxValue;
+                faceLineSlope = -face.Height/0.01;
                 faceLineOffset = face.Y - faceLineSlope * face.X + face.Width / 2;
             }
         }
 
 
 
-        public Rectangle[] GetEyes2()
-        {
-            List<Rectangle> validEyes = new List<Rectangle>();
-           /* foreach (Rectangle eye in eyes)
-            {
-                //Ensure the eyes are in the upper half of the img region
-                if (eye.Bottom > face.Y + face.Height / 2)
-                    continue;
 
-                validEyes.Add(eye);
-            }*/
-
-            List<Rectangle> rightCandidates = new List<Rectangle>();
-            List<Rectangle> leftCandidates = new List<Rectangle>();
-
-            foreach(Rectangle eye in eyes)
-            {
-                //Ensure the eyes are in the upper half of the img region
-                if (eye.Bottom > face.Y + face.Height / 2)
-                    continue;
-
-                if (eye.X + eye.Width / 2 < face.Width / 2)
-                    rightCandidates.Add(eye);
-                else
-                    leftCandidates.Add(eye);
-            }
-
-            //get centers for each side weighted by their areas
-            int totalAreas = 0;
-            int totalX = 0;
-            int totalY = 0;
-
-            foreach(Rectangle eye in rightCandidates)
-            {
-                int eyeArea = eye.Width * eye.Height;
-                totalAreas += eyeArea;
-
-                totalX += (eye.X + eye.Width / 2) * eyeArea;
-                totalY += (eye.Y + eye.Height / 2) * eyeArea;
-            }
-
-            Point rightPoint = new Point(totalX / totalAreas, totalY / totalAreas);
-
-            totalAreas = 0;
-            totalX = 0;
-            totalY = 0;
-
-            foreach (Rectangle eye in leftCandidates)
-            {
-                int eyeArea = eye.Width * eye.Height;
-                totalAreas += eyeArea;
-
-                totalX += (eye.X + eye.Width / 2) * eyeArea;
-                totalY += (eye.Y + eye.Height / 2) * eyeArea;
-            }
-
-            Point leftPoint = new Point(totalX / totalAreas, totalY / totalAreas);
-
-            Rectangle leftEye = new Rectangle(leftPoint, new Size(100, 100));
-            leftEye.Offset(-50, -50);
-
-            Rectangle rightEye = new Rectangle(rightPoint, new Size(100, 100));
-            rightEye.Offset(-50, -50);
-
-            return new Rectangle[] { leftEye, rightEye };
-
-            return validEyes.ToArray();
-
-            //Sort eyes by their X center
-            validEyes.Sort(new Comparison<Rectangle>(RectXCenterComparator));
-
-            //try to create groups for each side
-            List<List<Rectangle>> eyesXGroups = new List<List<Rectangle>>();
-            int listIndex = 0;
-
-            for (int i = 0; i < validEyes.Count; i++)
-            {
-                Rectangle eye = validEyes[i];
-
-                if (i == 0)
-                {
-                    eyesXGroups.Add(new List<Rectangle>());
-                    eyesXGroups[listIndex].Add(eye);
-                    continue;
-                }
-
-                if (i == validEyes.Count - 1)
-                {
-                    eyesXGroups[listIndex].Add(eye);
-                    break;
-                }
-
-                int eyeXCenter = eye.X + eye.Width / 2;
-                int prevXCenter = validEyes[i - 1].X + validEyes[i - 1].Width;
-                int nextXCenter = validEyes[i + 1].X + validEyes[i + 1].Width;
-
-                if (Math.Abs(eyeXCenter - prevXCenter) < Math.Abs(eyeXCenter - nextXCenter))
-                {
-                    eyesXGroups[listIndex].Add(eye);
-                }
-                else
-                {
-                    listIndex++;
-                    eyesXGroups.Add(new List<Rectangle>());
-                    eyesXGroups[listIndex].Add(eye);
-                }
-            }
-
-            return validEyes.ToArray();
-
-            //Must filter eyes by size, get an array of their diferences
-            //Since the eyes are usually near squares, we can use the area for comparison
-            validEyes.Sort(new Comparison<Rectangle>(RectAreaComparator)); //Organize eyes by their areas
-            List<List<Rectangle>> eyesGroups = new List<List<Rectangle>>();
-            /*int listIndex = 0;
-
-            for (int i = 0; i < validEyes.Count; i++)
-            {
-                Rectangle eye = validEyes[i];
-
-                if(i == 0)
-                {
-                    eyesGroups.Add(new List<Rectangle>());
-                    eyesGroups[listIndex].Add(eye);
-                    continue;
-                }
-
-                if(i == validEyes.Count - 1)
-                {
-                    eyesGroups[listIndex].Add(eye);
-                    break;
-                }
-
-                int eyeArea = eye.Height * eye.Width;
-                int prevArea = validEyes[i - 1].Height * validEyes[i - 1].Width;
-                int nextArea = validEyes[i + 1].Height * validEyes[i + 1].Width;
-
-                if(Math.Abs(eyeArea - prevArea) < Math.Abs(eyeArea - nextArea))
-                {
-                    eyesGroups[listIndex].Add(eye);
-                }
-                else
-                {
-                    listIndex++;
-                    eyesGroups.Add(new List<Rectangle>());
-                    eyesGroups[listIndex].Add(eye);
-                }
-            }*/
-
-            //Now lets calculate the variation inside each group
-            int[] groupsVariation = new int[eyesGroups.Count];
-            for (int i = 0; i < eyesGroups.Count; i++)
-            {
-                List<Rectangle> group = eyesGroups[i];
-
-                if (group.Count <= 1)
-                {
-                    groupsVariation[i] = -1;
-                    continue;
-                }
-
-                int groupVariationSum = 0;
-                for (int j = 1; j < group.Count; j++)
-                {
-                    Rectangle prevEye = group[j - 1];
-                    Rectangle eye = group[j];
-
-                    groupVariationSum += Math.Abs(prevEye.Height * prevEye.Width - eye.Height * eye.Width);
-                }
-
-                groupsVariation[i] = groupVariationSum / (group.Count - 1);
-            }
-
-
-            //int[] areaVariation = new int[eyes.Count];
-            //int i = 0;
-
-            /*eyes.Sort(new Comparison<Rectangle>(RectAreaComparator));
-            foreach (Rectangle eye in eyes)
-            {
-                areaVariation[i++] = eye.Width * eye.Height;
-            }*/
-
-
-
-
-
-
-            return validEyes.ToArray();
-        }
-
-
-
-        //public Rectangle FaceRect { get; private set; }
-       // public Rectangle[] EyesRects { get; set; }
         public Rectangle[] NoseRects { get; set; }
         
-        public bool IsValid2
-        {
-            get
-            {
-                Rectangle[] getEyes = this.GetEyes();
-                if (getEyes.Length >= 2)
-                    return true;
-
-                if (getEyes.Length == 1 && this.GetMouth().Width > 0)
-                    return true;
-
-                return false;
-            }
-        }
 
         //Comparators
-        int RectAreaComparator(Rectangle a, Rectangle b)
+        /*int RectAreaComparator(Rectangle a, Rectangle b)
         {
             if (a.Height * a.Width > b.Height * b.Width)
                 return 1;
@@ -637,7 +429,7 @@ namespace ImagineAlpha
             if (a.X + a.Width / 2 > b.X + b.Width / 2)
                 return 1;
             return -1;
-        }
+        }*/
 
     }
 
