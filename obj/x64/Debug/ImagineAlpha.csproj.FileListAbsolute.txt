@@ -46,3 +46,5 @@ C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\haarcascade_righte
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\frontalEyes35x16.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.Form1.resources
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\x64\Debug\ImagineAlpha.HistogramForm.resources
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\OpenCVInter.dll
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\x64\Debug\OpenCVInter.pdb
