@@ -18,6 +18,8 @@ using Emgu.CV.Util;
 using System.Runtime.InteropServices;
 using System.Drawing.Drawing2D;
 
+
+
 using OpenCVJavaInterface;
 
 namespace ImagineAlpha
@@ -44,12 +46,10 @@ namespace ImagineAlpha
             InitializeComponent();
         }
 
-        Image<Gray,Byte> grayImg;
-
-        void createHistogram(IImage image, int bins)
+        void createHistogram(IImage image, int bins, string title)
         {
             HistogramForm histForm = new HistogramForm();
-            histForm.SetHistogram(image, bins);
+            histForm.SetHistogram(image, bins, title);
             histForm.Show();
         }
 
@@ -57,38 +57,27 @@ namespace ImagineAlpha
         {
             if(openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                Mat image = new Mat(openFileDialog1.FileName, LoadImageType.Color);
-                grayImg = new Image<Gray, Byte>(image.Bitmap);
+                //Get the original img Mat
+                Mat originalImage = new Mat(openFileDialog1.FileName, LoadImageType.Color);
 
-                System.Drawing.Bitmap skyImg = new System.Drawing.Bitmap(image.Width, image.Height);
-                System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(skyImg);
-                LinearGradientBrush grad = new LinearGradientBrush(
-                    new System.Drawing.Rectangle(0, 0, skyImg.Width, skyImg.Height),
-                    System.Drawing.Color.Blue,
-                    System.Drawing.Color.White,
-                    LinearGradientMode.Vertical);
+                //Load the original image
+                imageBox1.Image = originalImage;
 
-                graphics.FillRectangle(grad, grad.Rectangle);
-
-                Mat newImage = new Mat(image.Size, image.Depth, image.NumberOfChannels);
-
-                Image<Bgr, byte> skyImg2 = new Image<Bgr, byte>(skyImg);
-                newImage = skyImg2.Mat;
-
-                int newImgLength = newImage.Cols * newImage.Rows * newImage.NumberOfChannels;
-
-                /*for (int i = 0; i < newImgLength; i++)
-                {
-                    newImage.SetValue(i, (byte)255);
-                }*/
+                //Get gray image
+                Mat grayImg = new Mat();
+                CvInvoke.CvtColor(originalImage, grayImg, ColorConversion.Bgr2Gray);
 
 
-                CvInvoke.CvtColor(image, grayImg, ColorConversion.Bgr2Gray);
+                //Create paisage
+                Mat illustratedImg = gradientFill(new Size(originalImage.width(), originalImage.height()));
 
-                pictureBox2.Image = grayImg.Bitmap;
-                //pictureBox3.Image = grayImg.ThresholdToZero(new Gray(253)).Bitmap;
+                //Show gray image
+                imageBox3.Image = grayImg;
 
-                ArrayList<PersonFace> personFaces = faceDetector.Detect(image);
+                Mat featureImage = originalImage.Clone();
+
+                //Run face detector on the image
+                ArrayList<PersonFace> personFaces = faceDetector.Detect(featureImage);
 
                 foreach (PersonFace personFace in personFaces)
                 {
@@ -97,240 +86,519 @@ namespace ImagineAlpha
                     if (!personFace.IsValid())
                         continue;
 
+                    drawFaceRectangles(personFace, originalImage.Clone());
+
+                    detectSkinColor(personFace, originalImage.Clone());
+
+                    detectHair(personFace, originalImage.Clone());
+
+                    drawFaceFeatures(personFace, illustratedImg);
+
                     //----- Begin Histogram Tests ---------------
 
-                    //Image<Bgr, byte> testImg = new Image<Bgr, byte>(image.Bitmap);
+
+                    /*DenseHistogram hist = new DenseHistogram(256, new RangeF(0, 255));
+
+                    Image<Gray, byte>[] imgComponents = testImg.Split();
+
+                    //Get blue components
+                    hist.Calculate(new Image<Gray, byte>[] { imgComponents[0] }, false, null);
+                    float[] blueBins = hist.GetBinValues();
+
+                    //Get green components
+                    hist.Calculate(new Image<Gray, byte>[] { imgComponents[1] }, false, null);
+                    float[] greenBins = hist.GetBinValues();
+
+                    //Get red components
+                    hist.Calculate(new Image<Gray, byte>[] { imgComponents[2] }, false, null);
+                    float[] redBins = hist.GetBinValues();
+
+                    double blueMean = 0;
+                    for (int i = 0; i < blueBins.Length; i++)
+                    {
+                        blueMean += i * blueBins[i];
+                    }
+
+                    blueMean /= testImg.Width * testImg.Height;
+
+                    double greenMean = 0;
+                    for (int i = 0; i < greenBins.Length; i++)
+                    {
+                        greenMean += i * greenBins[i];
+                    }
+
+                    greenMean /= testImg.Width * testImg.Height;
+
+                    double redMean = 0;
+                    for (int i = 0; i < redBins.Length; i++)
+                    {
+                        redMean += i * redBins[i];
+                    }
+
+                    redMean /= testImg.Width * testImg.Height;
+
+                    Scalar skinColor = new Scalar(
+                        Math.Round(blueMean),
+                        Math.Round(greenMean),
+                        Math.Round(redMean));
+
+                    setColorBox((byte)Math.Round(redMean), 
+                        (byte)Math.Round(greenMean), 
+                        (byte)Math.Round(blueMean));*/
+
+                    //MessageBox.Show(redMean + " " + greenMean + " " + blueMean);
 
 
-                    /*you will get the most used values from the histogram and compare to pre created colors to find the one that matches better
+                    /*testImg.ROI = default(System.Drawing.Rectangle);
 
-                    must verify which color spaces we will compare <- this later
+                    int[] blueValues = getMinMaxBins(blueBins);
+                    int[] greenValues = getMinMaxBins(greenBins);
+                    int[] redValues = getMinMaxBins(redBins);*/
 
-                        for the mvp, everyone will be white rgb 227,203,172*/
 
-                    //testImg.InRange()
+                    //imageBox5.Image = testImg.InRange(
+                    //new Bgr(blueValues[0], greenValues[0], redValues[0]), 
+                    //new Bgr(blueValues[1], greenValues[1], redValues[1]));
 
-                    /*pictureBox3.Image = testImg.Bitmap;
+                    //string testStr = "";
 
-                    testImg.ROI = personFace.GetFace();
-                    grayImg.ROI = personFace.GetFace();
+                    //foreach (float bin in blueBins)
+                    //testStr += bin + " ";
 
-                    createHistogram(testImg, 256);
-                    createHistogram(grayImg, 256);
 
-                    pictureBox2.Image = grayImg.Bitmap;
-                    pictureBox3.Image = testImg.Bitmap;*/
+                    //MessageBox.Show(testStr);
+
+                    /* foreach (float bin in greenBins)
+                         testStr += bin + " ";
+
+                     MessageBox.Show(testStr);
+
+                     foreach (float bin in redBins)
+                         testStr += bin + " ";
+
+                     MessageBox.Show(testStr);*/
+
 
 
                     //-----End Histogram Tests ----------------
 
-                    Rect faceRect = personFace.GetFace();
-                    Rect mouthRect = personFace.GetMouth();
-                    Rect noseRect = personFace.GetNose();
-                    Rect[] eyesRects = personFace.GetEyes();
 
-                    //Draw face division line
-                    double[] faceLineData = personFace.GetFaceLineData();
-                    PointGenerator faceLine = new PointGenerator(faceLineData[0], faceLineData[1]);
-                    Point faceTopPoint = faceLine.GetFromY(faceRect.y);
-                    Point faceBottomPoint = faceLine.GetFromY(faceRect.y + faceRect.height);
-                    //CvInvoke.Line(image, faceTopPoint, faceBottomPoint, new Bgr(Color.Orange).MCvScalar, 3);
 
-                    //Draw rect around the face
-                    //CvInvoke.Rectangle(image, faceRect, new Bgr(Color.Yellow).MCvScalar, 2);
+                    //---------------- Hair box ------------------
 
-                    //Draw rect around the mouth
-                    //CvInvoke.Rectangle(image, mouthRect, new Bgr(Color.Blue).MCvScalar, 2);
+                    //Top hair point
+                    //Point hairTopPoint = faceLine.GetFromY(faceRect.y - faceRect.height / 3);
+                    //Rect hairBox = new Rect(hairTopPoint.x - faceRect.width / 2, hairTopPoint.y,
+                        //faceRect.width, faceRect.height / 3);
 
-                    //Draw rect around the nose
-                    //CvInvoke.Rectangle(image, noseRect, new Bgr(Color.Green).MCvScalar, 2);
+                    //Mat hairMat = new Mat(originalImage, new System.Drawing.Rectangle(hairBox.x, hairBox.y, 
+                        //hairBox.width, hairBox.height));
+                    
+                    //imageBox5.Image = hairMat;
 
-                    //Draw eyes rect and circles
-                    foreach (Rect eye in eyesRects)
+                    //Imgproc.line(hairMat, new Point(0, hairMat.height() / 2),
+                    //new Point(hairMat.width(), hairMat.height() / 2), new Scalar(255, 255, 255));
+
+                    //createHistogram(hairMat, 256, "Before");
+
+                    //Mat transformedImg = ImgTransform.Get(hairMat.Clone());
+
+                    //createHistogram(transformedImg, 256, "After");
+
+                    //imageBox9.Image = transformedImg;
+
+
+                    //pictureBox1.Image = ImgTransform.Get(originalImage.Bitmap);
+
+                    //MessageBox.Show(hairMat.Size.ToString());
+
+                    /*testImg.ROI = new System.Drawing.Rectangle(hairBox.x, hairBox.y,
+                        hairBox.width, hairBox.height);*/
+
+                    /*System.Drawing.Bitmap hairBmp = testImg.Bitmap;
+                    System.Drawing.Imaging.BitmapData hairData = hairBmp.LockBits(new System.Drawing.Rectangle(0, 0, hairBmp.Width, hairBmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+
+                    byte[] hairBytes = new byte[hairData.Stride * hairData.Height];
+
+                    Marshal.Copy(hairData.Scan0, hairBytes, 0, hairBytes.Length);
+
+                    //-------- Handle Bytes ---------------------
+
+                    for (int i = 0; i < hairBytes.Length; i++)
                     {
-                        /*CvInvoke.Rectangle(image, eye, new Bgr(Color.White).MCvScalar, 2);
-                        CvInvoke.Circle(image, new Point(eye.X + eye.Width / 2, eye.Y + eye.Height / 2), eye.Width / 2, new Bgr(Color.White).MCvScalar, 2);*/
+                        hairBytes[i] = 128;
                     }
 
-                    //Get face feature angle
-                    double faceFeatureAngle = Math.Atan(faceLineData[0]);
-                    faceFeatureAngle = RadianToDegree(faceFeatureAngle);
-                    faceFeatureAngle += faceFeatureAngle > 0 ? -90 : 90;
+                    //-------------------------------------------
+
+                    Marshal.Copy(hairBytes, 0, hairData.Scan0, hairBytes.Length);
+
+                    hairBmp.UnlockBits(hairData);
+
+                    //pictureBox2.Image = hairBmp;
+
+                    testImg.ROI = default(System.Drawing.Rectangle);*/
+
+                    //Imgproc.rectangle(featureImage, hairBox, new Scalar(64, 64, 0),2);
 
 
-                    //Draw circle around face
-                    /*Point faceCenter = new Point(faceRect.X + faceRect.Width / 2, 
-                        faceRect.Y + faceRect.Height / 2);
-                    Size faceSize = new Size(faceRect.Width / 2, faceRect.Height / 2);
-                    CvInvoke.Ellipse(image, faceCenter,faceSize,0,0,360,
-                        new Bgr(172, 203, 227).MCvScalar,0);
-                    CvInvoke.Ellipse(image, faceCenter, faceSize, 0, 0, 360, 
-                        new Bgr(Color.Black).MCvScalar, 1);*/
+                    //--------------------------------------------
 
-                    //Draw face lateral boundaries lines
-                    //Detect right and left eye
-                    Rect rightEye, leftEye;
-                    if(eyesRects[0].x > eyesRects[1].x)
-                    {
-                        rightEye = eyesRects[1];
-                        leftEye = eyesRects[0];
-                    }
-                    else
-                    {
-                        rightEye = eyesRects[0];
-                        leftEye = eyesRects[1];
-                    }
-
-                    //get eye line generator
-                    PointGenerator eyeLines = new PointGenerator(
-                        getRectCenter(rightEye), getRectCenter(leftEye));
-
-                    Point leftFacePoint = eyeLines.GetFromX(getRectCenter(leftEye).x + leftEye.width);
-                    Point rightFacePoint = eyeLines.GetFromX(getRectCenter(rightEye).x - rightEye.width);
-
-                   /* CvInvoke.Circle(image, leftFacePoint, 20,
-                        new Bgr(Color.Green).MCvScalar, -1);
-
-                    CvInvoke.Circle(image, rightFacePoint, 20,
-                        new Bgr(Color.Blue).MCvScalar, -1);*/
-
-
-
-                    //Get line generators for each side of the face
-                    double faceLineSlope = faceLineData[0];
-
-                    //Left side
-                    double leftFaceSideOffset = leftFacePoint.y - leftFacePoint.x * faceLineSlope;
-                    PointGenerator leftFaceLine = new PointGenerator(faceLineSlope, leftFaceSideOffset);
-
-                    Point startPointL = leftFaceLine.GetFromY(0);
-                    Point endPointL = leftFaceLine.GetFromY(image.Height);
-
-                    //Right side
-                    double rightFaceSideOffset = rightFacePoint.y - rightFacePoint.x * faceLineSlope;
-                    PointGenerator rightFaceLine = new PointGenerator(faceLineSlope, rightFaceSideOffset);
-
-                    Point startPointR = rightFaceLine.GetFromY(0);
-                    Point endPointR = rightFaceLine.GetFromY(image.Height);
-
-                    //CvInvoke.Line(image, startPointL, endPointL, new Bgr(Color.Green).MCvScalar, 3);
-                    //CvInvoke.Line(image, startPointR, endPointR, new Bgr(Color.Blue).MCvScalar, 3);
-
-
-                    //Draw mouth line
-                    //Put center on the top for the mouth stay in the middle of the mouth square
-                    Point mouthCenter = new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y);
-                    Size mouthSize = new Size(mouthRect.width / 2, mouthRect.height / 2);
-
-                    Point mCenter = getRectCenter(mouthRect);
-
-                    //Get mouth line generator
-                    double aFactMouth = Math.Tan(Math.Atan(faceLineSlope) + Math.PI / 2);
-                    double bfactMouth = mCenter.y - mCenter.x * aFactMouth;
-                    PointGenerator mouthLine = new PointGenerator(aFactMouth, bfactMouth);
-
-                    double leftFaceMouthCrossX = (bfactMouth - leftFaceSideOffset) /
-                        (faceLineSlope - aFactMouth);
-
-                    double rightFaceMouthCrossX = (bfactMouth - rightFaceSideOffset) /
-                        (faceLineSlope - aFactMouth);
-
-                    Point leftFaceMouthCross = mouthLine.GetFromX(leftFaceMouthCrossX);
-                    Point rightFaceMouthCross = mouthLine.GetFromX(rightFaceMouthCrossX);
-
-                    //Get face top line
-                    double afactTopFace = aFactMouth;   //use the mouth line since this uses the same slope
-                    double bfactTopFace = faceTopPoint.y - faceTopPoint.x * afactTopFace;
-                    PointGenerator faceTopLine = new PointGenerator(afactTopFace, bfactTopFace);
-
-                    double leftTopFaceCrossX = (bfactTopFace - leftFaceSideOffset) /
-                         (faceLineSlope - afactTopFace);
-
-                    double rightTopFaceCrossX = (bfactTopFace - rightFaceSideOffset) /
-                        (faceLineSlope - afactTopFace);
-
-                    Point leftTopFaceCross = faceTopLine.GetFromX(leftTopFaceCrossX);
-                    Point rightTopFaceCross = faceTopLine.GetFromX(rightTopFaceCrossX);
-
-                    //CvInvoke.Circle(image, leftTopFaceCross, 5, new Bgr(Color.Black).MCvScalar, -1);
-                    //CvInvoke.Circle(image, rightTopFaceCross, 5, new Bgr(Color.Black).MCvScalar, -1);
-                    //CvInvoke.Circle(image, leftFaceMouthCross, 5, new Bgr(Color.Black).MCvScalar, -1);
-                    //CvInvoke.Circle(image, rightFaceMouthCross, 5, new Bgr(Color.Black).MCvScalar, -1);
-                    //CvInvoke.Circle(image, faceBottomPoint, 5, new Bgr(Color.Black).MCvScalar, -1);
-
-                    /*Point[] facePoints = new Point[]
-                    {
-                        leftTopFaceCross,
-                        rightTopFaceCross,
-                        rightFaceMouthCross,
-                        faceBottomPoint,
-                        leftFaceMouthCross
-                    };*/
-
-                    MatOfPoint facePointsMat = new MatOfPoint(leftTopFaceCross,
-                        rightTopFaceCross,
-                        rightFaceMouthCross,
-                        faceBottomPoint,
-                        leftFaceMouthCross);
-
-
-
-                    //VectorOfPoint facePointsVector = new VectorOfPoint(facePoints);
-
-
-                    //CvInvoke.Polylines(image, facePointsVector, true, new Bgr(172, 203, 227).MCvScalar, 1);
-
-                    Imgproc.fillConvexPoly(newImage, facePointsMat, new Scalar(172, 203, 227));
-                    //CvInvoke.FillConvexPoly(newImage, facePointsVector, new Bgr(172, 203, 227).MCvScalar);
-                    //CvInvoke.FillPoly(image, facePointsVector, new Bgr(172, 203, 227).MCvScalar);
-
-                    //CvInvoke.Ellipse(newImage, mouthCenter, mouthSize, faceFeatureAngle, 0, 180,
-                    //new Bgr(System.Drawing.Color.Black).MCvScalar, 2);
-
-                    Imgproc.ellipse(newImage, mouthCenter, mouthSize, faceFeatureAngle, 0, 180, new Scalar(0,0,0), 2);
-
-                    Point p1 = faceTopLine.GetFromX(0);
-                    Point p2 = faceTopLine.GetFromX(image.Width);
-                    //CvInvoke.Line(image, p1, p2, new Bgr(Color.Black).MCvScalar, 3);
-
-                    //Draw nose line
-                    Point noseCenter = new Point(noseRect.x + noseRect.width / 2, 
-                        noseRect.y + noseRect.height / 2);
-                    Size noseSize = new Size(noseRect.width / 2, noseRect.height / 2);
-                    double noseAngle = Math.Atan(faceLineData[0]);
-                    noseAngle = RadianToDegree(noseAngle);
-                    //CvInvoke.Ellipse(newImage, noseCenter, noseSize,
-                        //noseAngle, 0, 180,
-                        //new Bgr(System.Drawing.Color.Black).MCvScalar, 2);
-
-                    Imgproc.ellipse(newImage, noseCenter, noseSize, noseAngle, 0, 180, new Scalar(0, 0, 0), 2);
-
-                    //Draw eyes ellipses
-                    foreach (Rect eye in personFace.GetEyes())
-                    {
-                        Point eyeCenter = new Point(eye.x + eye.width / 2, eye.y + eye.height / 2);
-                        Size elipseSize = new Size(eye.width / 5, eye.height / 2);
-                        //CvInvoke.Ellipse(newImage, eyeCenter, elipseSize, faceFeatureAngle, 0, 360, 
-                            //new Bgr(System.Drawing.Color.Black).MCvScalar, -1);
-
-                        Imgproc.ellipse(newImage, eyeCenter, elipseSize, faceFeatureAngle, 0, 360, new Scalar(0, 0, 0), -1);
-                    }
-
-                    //CvInvoke.Line(newImage, faceBottomPoint, 
-                        //new Point(newImage.Width / 2, newImage.Height), new MCvScalar(0, 0, 0, 0));
-
-
-                    Imgproc.line(newImage, faceBottomPoint, new Point(newImage.width() / 2, newImage.height()), new Scalar(0, 0, 0));
+                    
 
                 }
 
-                
-
-                //Put the image on the picture box
-                pictureBox1.Image = newImage.Bitmap;
-                //pictureBox1.Image = skyImg2.Bitmap;
+                //Load illustracted img
+                imageBox4.Image = illustratedImg;
 
             }
+        }
+
+        void detectHair(PersonFace personFace, Mat hairImage)
+        {
+            imageBox12.Image = hairImage;
+        }
+
+        void drawFaceRectangles(PersonFace personFace, Mat featureImage)
+        {
+            Rect faceRect = personFace.GetFace();
+            Rect mouthRect = personFace.GetMouth();
+            Rect noseRect = personFace.GetNose();
+            Rect[] eyesRects = personFace.GetEyes();
+
+            double[] faceLineData = personFace.GetFaceLineData();
+            PointGenerator faceLine = new PointGenerator(faceLineData[0], faceLineData[1]);
+            Point faceTopPoint = faceLine.GetFromY(faceRect.y);
+            Point faceBottomPoint = faceLine.GetFromY(faceRect.y + faceRect.height);
+
+            //Draw face line
+            Imgproc.line(featureImage, faceTopPoint, faceBottomPoint, new Scalar(255, 0, 0), 1);
+
+            //Draw rect around the face
+            Imgproc.rectangle(featureImage, faceRect, new Scalar(0, 255, 255), 2);
+
+            //Draw circle around face
+            Point faceCenter = new Point(faceRect.x + faceRect.width / 2, faceRect.y + faceRect.height / 2);
+            Size faceSize = new Size(faceRect.width / 2, faceRect.height / 2);
+            Imgproc.ellipse(featureImage, faceCenter,faceSize,0,0,360,new Scalar(172, 203, 227),0);
+            Imgproc.ellipse(featureImage, faceCenter, faceSize, 0, 0, 360,new Scalar(0,0,0), 1);
+
+            //Draw rect around the mouth
+            Imgproc.rectangle(featureImage, mouthRect, new Scalar(0, 255, 255), 1);
+
+            //Draw rect around the nose
+            Imgproc.rectangle(featureImage, noseRect, new Scalar(0, 255, 255), 1);
+
+            //Draw eyes rect and circles
+            for (var i = 0; i < eyesRects.Length; i++)
+            {
+                Rect eye = eyesRects[i];
+                Imgproc.rectangle(featureImage, eye, new Scalar(0, 255, 255), 1);
+            }
+
+            imageBox2.Image = featureImage;
+        }
+
+        void detectSkinColor(PersonFace face, Mat skinColorImage)
+        {
+            Rect[] eyesRects = face.GetEyes();
+            Rect[] cheeksRect = new Rect[eyesRects.Length];
+            Rect faceRect = face.GetFace();
+
+            //Get cheek rectangles
+            for (var i = 0; i < eyesRects.Length; i++)
+            {
+                Rect eye = eyesRects[i];
+
+                int skinWidth = eye.width / 2;
+
+                //Create rectangle for skin detection
+                cheeksRect[i] = new Rect(eye.x + (eye.width - skinWidth) / 2, eye.y + eye.height + 5, skinWidth, eye.height / 2);
+                Imgproc.rectangle(skinColorImage, cheeksRect[i], new Scalar(255, 0, 0));
+            }
+
+            //Get Forehead rectangle
+
+            int fhWidth = faceRect.width / 4;
+            int fhHeight = faceRect.width / 5;
+
+            Rect fhRect = new Rect(faceRect.x + (faceRect.width - fhWidth) / 2,
+                faceRect.y + 5, fhWidth, fhHeight);
+
+            Imgproc.rectangle(skinColorImage, fhRect, new Scalar(255, 0, 0));
+
+
+            //Get rects pixel means and calculate skin color
+
+            //Forehead roi
+            Mat fhArea = new Mat(skinColorImage, new System.Drawing.Rectangle(
+                fhRect.x, fhRect.y, fhRect.width, fhRect.height));
+
+            //Forehead mean
+            MCvScalar fhMean = CvInvoke.Mean(fhArea);
+
+            //Skin color mean
+            MCvScalar skinMean = pointsMean(fhMean);
+
+            foreach (Rect cheekRect in cheeksRect)
+            {
+                //Cheek roi
+                Mat cheekArea = new Mat(skinColorImage, new System.Drawing.Rectangle(
+                cheekRect.x, cheekRect.y, cheekRect.width, cheekRect.height));
+
+                //Cheek mean
+                MCvScalar cheekMean = CvInvoke.Mean(cheekArea);
+
+                //Updates skin mean
+                skinMean = pointsMean(skinMean, cheekMean);
+            }
+
+            //Set image of the rectangles
+            imageBox11.Image = skinColorImage;
+
+            //Set skin color image
+            pictureBox2.Image = new Image<Bgr, byte>(200, 200,
+                new Bgr(skinMean.V0, skinMean.V1, skinMean.V2)).Bitmap;
+        }
+
+        void drawFaceFeatures(PersonFace personFace, Mat illustratedImg)
+        {
+
+            Rect faceRect = personFace.GetFace();
+            Rect mouthRect = personFace.GetMouth();
+            Rect noseRect = personFace.GetNose();
+            Rect[] eyesRects = personFace.GetEyes();
+
+            //Draw face division line
+            double[] faceLineData = personFace.GetFaceLineData();
+            PointGenerator faceLine = new PointGenerator(faceLineData[0], faceLineData[1]);
+            Point faceTopPoint = faceLine.GetFromY(faceRect.y);
+            Point faceBottomPoint = faceLine.GetFromY(faceRect.y + faceRect.height);
+
+            //Imgproc.line(illustratedImg, faceTopPoint, faceBottomPoint, new Scalar(255, 0, 0), 1);
+
+            //Get face feature angle
+            double faceFeatureAngle = Math.Atan(faceLineData[0]);
+            faceFeatureAngle = RadianToDegree(faceFeatureAngle);
+            faceFeatureAngle += faceFeatureAngle > 0 ? -90 : 90;
+
+            //Draw face lateral boundaries lines
+            //Detect right and left eye
+            Rect rightEye, leftEye;
+            if (eyesRects[0].x > eyesRects[1].x)
+            {
+                rightEye = eyesRects[1];
+                leftEye = eyesRects[0];
+            }
+            else
+            {
+                rightEye = eyesRects[0];
+                leftEye = eyesRects[1];
+            }
+
+            //get eye line generator
+            PointGenerator eyeLines = new PointGenerator(
+                getRectCenter(rightEye), getRectCenter(leftEye));
+
+            Point leftFacePoint = eyeLines.GetFromX(getRectCenter(leftEye).x + leftEye.width);
+            Point rightFacePoint = eyeLines.GetFromX(getRectCenter(rightEye).x - rightEye.width);
+
+            /* CvInvoke.Circle(image, leftFacePoint, 20,
+                 new Bgr(Color.Green).MCvScalar, -1);
+
+             CvInvoke.Circle(image, rightFacePoint, 20,
+                 new Bgr(Color.Blue).MCvScalar, -1);*/
+
+
+            //Get line generators for each side of the face
+            double faceLineSlope = faceLineData[0];
+
+            //Left side
+            double leftFaceSideOffset = leftFacePoint.y - leftFacePoint.x * faceLineSlope;
+            PointGenerator leftFaceLine = new PointGenerator(faceLineSlope, leftFaceSideOffset);
+
+            Point startPointL = leftFaceLine.GetFromY(0);
+            Point endPointL = leftFaceLine.GetFromY(illustratedImg.Height);
+
+            //Right side
+            double rightFaceSideOffset = rightFacePoint.y - rightFacePoint.x * faceLineSlope;
+            PointGenerator rightFaceLine = new PointGenerator(faceLineSlope, rightFaceSideOffset);
+
+            Point startPointR = rightFaceLine.GetFromY(0);
+            Point endPointR = rightFaceLine.GetFromY(illustratedImg.Height);
+
+
+            //Imgproc.line(illustratedImg, startPointL, endPointL, new Scalar(0,255,0), 5);
+            //Imgproc.line(illustratedImg, startPointR, endPointR,new Scalar(255,0,0), 3);
+
+            //Draw mouth line
+            //Put center on the top for the mouth stay in the middle of the mouth square
+            Point mouthCenter = new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y);
+            Size mouthSize = new Size(mouthRect.width / 2, mouthRect.height / 2);
+
+            Point mCenter = getRectCenter(mouthRect);
+
+            //Get mouth line generator
+            double aFactMouth = Math.Tan(Math.Atan(faceLineSlope) + Math.PI / 2);
+            double bfactMouth = mCenter.y - mCenter.x * aFactMouth;
+            PointGenerator mouthLine = new PointGenerator(aFactMouth, bfactMouth);
+
+            double leftFaceMouthCrossX = (bfactMouth - leftFaceSideOffset) /
+                (faceLineSlope - aFactMouth);
+
+            double rightFaceMouthCrossX = (bfactMouth - rightFaceSideOffset) /
+                (faceLineSlope - aFactMouth);
+
+            Point leftFaceMouthCross = mouthLine.GetFromX(leftFaceMouthCrossX);
+            Point rightFaceMouthCross = mouthLine.GetFromX(rightFaceMouthCrossX);
+
+            //Get face top line
+            double afactTopFace = aFactMouth;   //use the mouth line since this uses the same slope
+            double bfactTopFace = faceTopPoint.y - faceTopPoint.x * afactTopFace;
+            PointGenerator faceTopLine = new PointGenerator(afactTopFace, bfactTopFace);
+
+            double leftTopFaceCrossX = (bfactTopFace - leftFaceSideOffset) /
+                 (faceLineSlope - afactTopFace);
+
+            double rightTopFaceCrossX = (bfactTopFace - rightFaceSideOffset) /
+                (faceLineSlope - afactTopFace);
+
+            Point leftTopFaceCross = faceTopLine.GetFromX(leftTopFaceCrossX);
+            Point rightTopFaceCross = faceTopLine.GetFromX(rightTopFaceCrossX);
+
+
+            /*CvInvoke.Circle(illustratedImg, leftTopFaceCross, 5, new MCvScalar(), -1);
+            CvInvoke.Circle(illustratedImg, rightTopFaceCross, 5, new MCvScalar(), -1);
+            CvInvoke.Circle(illustratedImg, leftFaceMouthCross, 5, new MCvScalar(), -1);
+            CvInvoke.Circle(illustratedImg, rightFaceMouthCross, 5, new MCvScalar(), -1);
+            CvInvoke.Circle(illustratedImg, faceBottomPoint, 5, new MCvScalar(), -1);*/
+
+
+            MatOfPoint facePointsMat = new MatOfPoint(leftTopFaceCross,
+                rightTopFaceCross,
+                rightFaceMouthCross,
+                faceBottomPoint,
+                leftFaceMouthCross);
+
+
+            //CvInvoke.Polylines(image, facePointsVector, true, new Bgr(172, 203, 227).MCvScalar, 1);
+
+            Imgproc.fillConvexPoly(illustratedImg, facePointsMat, new Scalar(255,255,255));
+
+
+            Imgproc.ellipse(illustratedImg, mouthCenter, mouthSize, faceFeatureAngle, 0, 180, new Scalar(0,0,0), 2);
+
+            Point p1 = faceTopLine.GetFromX(0);
+            Point p2 = faceTopLine.GetFromX(illustratedImg.Width);
+
+            //Imgproc.line(illustratedImg, p1, p2, new Scalar(0, 0, 0), 3);
+
+
+
+
+            //Draw nose line
+            Point noseCenter = new Point(noseRect.x + noseRect.width / 2,
+                noseRect.y + noseRect.height / 2);
+            Size noseSize = new Size(noseRect.width / 2, noseRect.height / 2);
+            double noseAngle = Math.Atan(faceLineData[0]);
+            noseAngle = RadianToDegree(noseAngle);
+
+
+
+            Imgproc.ellipse(illustratedImg, noseCenter, noseSize, noseAngle, 0, 180, new Scalar(0, 0, 0), 2);
+
+
+
+
+            //Draw eyes ellipses
+            foreach (Rect eye in personFace.GetEyes())
+            {
+                Point eyeCenter = new Point(eye.x + eye.width / 2, eye.y + eye.height / 2);
+                Size ellipseSize = new Size(eye.width / 5, eye.height / 2);
+
+                Imgproc.ellipse(illustratedImg, eyeCenter, ellipseSize, faceFeatureAngle, 0, 360, new Scalar(0, 0, 0), -1);
+            }
+
+            Imgproc.line(illustratedImg, faceBottomPoint, new Point(illustratedImg.width() / 2, illustratedImg.height()), new Scalar(0, 0, 0));
+
+
+        }
+
+
+        int[] getMinMaxBins(float[] bins)
+        {
+            //Create groups of the pixel ranges
+            List<List<int>> groups = new List<List<int>>();
+            List<int> currentGroup = null;
+
+            for (int i = 0; i < bins.Length; i++)
+            {
+                float bin = bins[i];
+
+                if (bin < 1)
+                {
+                    currentGroup = null;
+                }
+                else
+                {
+                    if (currentGroup == null)
+                    {
+                        currentGroup = new List<int>();
+                        groups.Add(currentGroup);
+                    }
+
+                    currentGroup.Add(i);
+                }
+            }
+
+            if (groups.Count == 0)
+                return new int[] { 0, 255 };
+
+            //Get largest group
+            List<int> largestGroup = groups[0];
+
+            foreach (List<int> group in groups)
+            {
+                if (group.Count > largestGroup.Count)
+                    largestGroup = group;
+            }
+
+            int minValue = largestGroup[0];
+            int maxValue = largestGroup[largestGroup.Count - 1];
+
+            return new int[] { minValue, maxValue };
+        }
+
+        double euclideanDistance(MCvScalar point1, MCvScalar point2)
+        {
+            return Math.Sqrt(
+                Math.Pow(point1.V0 - point2.V0, 2) +
+                Math.Pow(point1.V1 - point2.V1, 2) +
+                Math.Pow(point1.V2 - point2.V2, 2) +
+                Math.Pow(point1.V3 - point2.V3, 2)
+            );
+        }
+
+        MCvScalar pointsMean(params MCvScalar[] points)
+        {
+            double V0 = 0, V1 = 0, V2 = 0, V3 = 0;
+
+            int pointsLength = points.Length;
+
+            foreach(MCvScalar point in points)
+            {
+                V0 += point.V0;
+                V1 += point.V1;
+                V2 += point.V2;
+                V3 += point.V3;
+            }
+
+            return new MCvScalar(
+                V0 / pointsLength,
+                V1 / pointsLength,
+                V2 / pointsLength,
+                V3 / pointsLength
+            );            
         }
 
         private double RadianToDegree(double angle)
@@ -338,24 +606,63 @@ namespace ImagineAlpha
             return angle * (180.0 / Math.PI);
         }
 
-        //byte gValue = 252;
-        private void pictureBox3_Click(object sender, EventArgs e)
+        public Mat gradientFill(Size size)
         {
-            //pictureBox3.Image = grayImg.ThresholdToZero(new Gray(gValue--)).Bitmap;
+            System.Drawing.Bitmap gradImg = new System.Drawing.Bitmap(size.width, size.height);
+            System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(gradImg);
+            LinearGradientBrush grad = new LinearGradientBrush(
+                new System.Drawing.Rectangle(0, 0, gradImg.Width, gradImg.Height),
+                System.Drawing.Color.Blue,
+                System.Drawing.Color.White,
+                LinearGradientMode.Vertical);
+
+            graphics.FillRectangle(grad, grad.Rectangle);
+
+            return new Image<Bgr, byte>(gradImg).Mat;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        void setColorBox(byte red, byte green, byte blue)
         {
-            double grayLevel = double.Parse(textBox1.Text);
+            System.Drawing.Bitmap colorBox = new System.Drawing.Bitmap(200, 200);
+            System.Drawing.Imaging.BitmapData colorData = colorBox.LockBits(new System.Drawing.Rectangle(0, 0, 200, 200),
+                System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
 
-            //pictureBox3.Image = grayImg.ThresholdToZero(new Gray(grayLevel)).Bitmap;
+            byte[] colorArr = new byte[colorData.Height * colorData.Stride];
+
+            for (int i = 0; i < colorArr.Length; i++)
+            {
+                switch(i%3)
+                {
+                    case 0:
+                        colorArr[i] = blue;
+                        break;
+
+                    case 1:
+                        colorArr[i] = green;
+                        break;
+
+                    case 2:
+                        colorArr[i] = red;
+                        break;
+                }
+            }
+
+            Marshal.Copy(colorArr, 0, colorData.Scan0, colorArr.Length);
+
+            colorBox.UnlockBits(colorData);
+
+            //pictureBox1.Image = colorBox;
         }
+
 
         private Point getRectCenter(Rect rect)
         {
             return new Point(rect.x + rect.width / 2, rect.y + rect.height / 2);
         }
     }
+
+
+
 
 
 

@@ -98,6 +98,7 @@
     <Compile Include="HistogramForm.Designer.cs">
       <DependentUpon>HistogramForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImgTransform.cs" />
     <Compile Include="PersonFace.cs" />
     <Compile Include="PointGenerator.cs" />
     <Compile Include="Program.cs" />

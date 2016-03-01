@@ -1,7 +1,6 @@
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\ImagineAlpha.exe.config
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\cvextern.dll
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_eye.xml
-C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_frontalface_default.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\lena.jpg
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\ImagineAlpha.exe
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\ImagineAlpha.pdb
@@ -15,9 +14,36 @@ C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\Emgu.CV.UI.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\Emgu.CV.UI.GL.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\Emgu.CV.World.xml
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\Microsoft.VisualStudio.DebuggerVisualizers.xml
-C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\Debug\ImagineAlpha.csprojResolveAssemblyReference.cache
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\Debug\ImagineAlpha.Form1.resources
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\Debug\ImagineAlpha.Properties.Resources.resources
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\Debug\ImagineAlpha.csproj.GenerateResource.Cache
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\Debug\ImagineAlpha.exe
 C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\Debug\ImagineAlpha.pdb
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\frontalEyes35x16.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_eye (2).xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_eye_tree_eyeglasses (2).xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_eye_tree_eyeglasses.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_frontalcatface.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_frontalcatface_extended.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_frontalface_alt2.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_lefteye_2splits (2).xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_lefteye_2splits.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_mcs_eyepair_big.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_mcs_eyepair_small.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_mcs_leftear.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_mcs_lefteye.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_mcs_nose.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_mcs_rightear.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_mcs_righteye.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_profileface (2).xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_profileface (3).xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_profileface.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_righteye_2splits (2).xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\haarcascade_righteye_2splits.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\Mouth.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\Nose.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\ojoD.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\ojoI.xml
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\OpenCVInter.dll
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\bin\Debug\OpenCVInter.pdb
+C:\Users\Du0X\Desktop\ImagineAlpha\ImagineAlpha\obj\Debug\ImagineAlpha.HistogramForm.resources

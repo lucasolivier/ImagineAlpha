@@ -23,10 +23,11 @@ namespace ImagineAlpha
             InitializeComponent();
         }
 
-        public void SetHistogram(IImage image, int numberOfbins)
+        public void SetHistogram(IImage image, int numberOfbins, string title)
         {
             histogramBox1.Size = Screen.PrimaryScreen.WorkingArea.Size;
             histogramBox1.GenerateHistograms(image, 256);
+            label1.Text = title;
             histogramBox1.Refresh();
         }
     }
