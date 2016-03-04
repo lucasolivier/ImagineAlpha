@@ -46,12 +46,7 @@ namespace ImagineAlpha
             InitializeComponent();
         }
 
-        void createHistogram(IImage image, int bins, string title)
-        {
-            HistogramForm histForm = new HistogramForm();
-            histForm.SetHistogram(image, bins, title);
-            histForm.Show();
-        }
+
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -79,6 +74,8 @@ namespace ImagineAlpha
                 //Run face detector on the image
                 ArrayList<PersonFace> personFaces = faceDetector.Detect(featureImage);
 
+                Mat hairImage = originalImage.Clone();
+
                 foreach (PersonFace personFace in personFaces)
                 {
                     personFace.Evaluate();
@@ -90,7 +87,9 @@ namespace ImagineAlpha
 
                     detectSkinColor(personFace, originalImage.Clone());
 
-                    detectHair(personFace, originalImage.Clone());
+                    
+                    //detectHair(personFace, hairImage);
+
 
                     drawFaceFeatures(personFace, illustratedImg);
 
@@ -251,12 +250,131 @@ namespace ImagineAlpha
                 //Load illustracted img
                 imageBox4.Image = illustratedImg;
 
+                //Load hair detected img
+                imageBox12.Image = hairImage;
+
             }
         }
 
         void detectHair(PersonFace personFace, Mat hairImage)
         {
-            imageBox12.Image = hairImage;
+            Rect faceRect = personFace.GetFace();
+
+            double adjWidth = faceRect.width * 0.85;
+            double adjHeight = faceRect.height * 1.2;
+            double adjX = faceRect.x + (faceRect.width - adjWidth) / 2;
+            double adjY = faceRect.y + (faceRect.height - adjHeight) / 2;
+
+            Rect adjFaceRect = new Rect((int)adjX, (int)adjY, (int)adjWidth, (int)adjHeight);
+
+            double[] faceLineData = personFace.GetFaceLineData();
+            PointGenerator faceLine = new PointGenerator(faceLineData[0], faceLineData[1]);
+            Point faceTopPoint = faceLine.GetFromY(adjFaceRect.y);
+            Point faceBottomPoint = faceLine.GetFromY(adjFaceRect.y + adjFaceRect.height);
+
+            //Draw face line
+            //Imgproc.line(hairImage, faceTopPoint, faceBottomPoint, new Scalar(255, 0, 0), 2);
+
+            //Get face feature angle
+            double faceFeatureAngle = Math.Atan(faceLineData[0]);
+            faceFeatureAngle = RadianToDegree(faceFeatureAngle);
+            faceFeatureAngle += faceFeatureAngle > 0 ? -90 : 90;
+
+            //Imgproc.rectangle(hairImage, adjFaceRect, new Scalar(0, 255, 255), 2);
+
+            /*Imgproc.ellipse(hairImage, 
+                new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2), 
+                new Size(adjFaceRect.width/2, adjFaceRect.height/2), faceFeatureAngle, 0, 360, new Scalar(255, 0, 0), 2);
+
+            Imgproc.ellipse(hairImage,
+                new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2),
+                new Size((int)(adjFaceRect.width / 1.8), (int)(adjFaceRect.height / 1.8)), faceFeatureAngle, 0, 360, new Scalar(255, 0, 0), 2);*/
+
+            Mat[] imgComponents = hairImage.Split();
+
+            for (int i = 0; i < 5; i++)
+            {
+                double factor = 1.8 - i * 0.2;
+
+                Mat maskImage = new Image<Gray, byte>(hairImage.width(), hairImage.height(), new Gray(0)).Mat;
+
+                Imgproc.ellipse(maskImage,
+                    new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2),
+                    new Size((int)(adjFaceRect.width / factor), (int)(adjFaceRect.height / factor)), faceFeatureAngle + 180, 0, 180, new Scalar(255), -1);
+
+                Imgproc.ellipse(maskImage,
+                    new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2),
+                    new Size(adjFaceRect.width / 2, adjFaceRect.height / 2), faceFeatureAngle, 0, 360, new Scalar(0), -1);
+
+                //imageBox13.Image = maskImage;
+
+                Mat testImg = new Mat();
+
+                hairImage.CopyTo(testImg, maskImage);
+
+                imageBox13.Image = testImg;
+
+                Stack<string> titleStack = new Stack<string>();
+                titleStack.Push("Red");
+                titleStack.Push("Green");
+                titleStack.Push("Blue");
+
+                HistogramForm histForm = new HistogramForm();
+
+                foreach (Mat img in imgComponents)
+                {
+                    //try histogram only the upper half to detect the most probable hair color range
+
+                    Mat hist = new Mat();
+                    CvInvoke.CalcHist(new VectorOfMat(img), new int[] { 0 }, maskImage, hist, new int[] { 256 }, new float[] { 0, 255 }, false);
+
+                    string color = titleStack.Pop();
+
+                    histForm.AddHist(hist, color, System.Drawing.Color.FromName(color));
+
+                    /*byte[] testBuffer = new byte[256];
+                    hist.CopyTo(testBuffer);
+
+                    string msg = "";
+
+                    foreach (byte value in testBuffer)
+                        msg += value + " ";
+
+                    msg += Environment.NewLine;
+                    msg += Environment.NewLine;
+
+                    textBox1.AppendText(msg);*/
+
+                }
+
+                histForm.Show(i.ToString());
+
+            }
+
+            Image<Bgr, byte> testImg2 = new Image<Bgr, byte>(hairImage.Bitmap);
+
+
+            imageBox13.Image = testImg2.InRange(new Bgr(25, 25, 25), new Bgr(100, 85, 100));
+
+            //createHistogram(new Image<Bgr, byte>(maskImage.Bitmap), 256, "teste");
+
+
+
+            /*Imgproc.ellipse(hairImage,
+                new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2),
+                new Size((int)(adjFaceRect.width / 1.6), (int)(adjFaceRect.height / 1.6)), faceFeatureAngle, 0, 360, new Scalar(255, 0, 0), 2);
+
+            Imgproc.ellipse(hairImage,
+                new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2),
+                new Size((int)(adjFaceRect.width / 1.4), (int)(adjFaceRect.height / 1.4)), faceFeatureAngle, 0, 360, new Scalar(255, 0, 0), 2);
+
+            Imgproc.ellipse(hairImage,
+                new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2),
+                new Size((int)(adjFaceRect.width / 1.2), (int)(adjFaceRect.height / 1.2)), faceFeatureAngle, 0, 360, new Scalar(255, 0, 0), 2);
+
+            Imgproc.ellipse(hairImage,
+                new Point(adjFaceRect.x + adjFaceRect.width / 2, adjFaceRect.y + adjFaceRect.height / 2),
+                new Size((int)(adjFaceRect.width / 1), (int)(adjFaceRect.height / 1)), faceFeatureAngle, 0, 360, new Scalar(255, 0, 0), 2);*/
         }
 
         void drawFaceRectangles(PersonFace personFace, Mat featureImage)
@@ -523,6 +641,21 @@ namespace ImagineAlpha
 
 
         }
+
+
+        /*void createHistogram(IImage image, int bins, string title)
+        {
+            HistogramForm histForm = new HistogramForm();
+            histForm.SetHistogram(image, bins, title);
+            histForm.Show();
+        }
+
+        void createHistogram(Mat hist,string title)
+        {
+            HistogramForm histForm = new HistogramForm();
+            histForm.ShowHist(hist, title);
+            histForm.Show();
+        }*/
 
 
         int[] getMinMaxBins(float[] bins)

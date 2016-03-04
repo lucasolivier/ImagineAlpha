@@ -57,6 +57,8 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.imageBox12 = new Emgu.CV.UI.ImageBox();
+            this.imageBox13 = new Emgu.CV.UI.ImageBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).BeginInit();
@@ -79,6 +81,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tabPage6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox12)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imageBox13)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -357,6 +360,8 @@
             // 
             // tabPage6
             // 
+            this.tabPage6.Controls.Add(this.textBox1);
+            this.tabPage6.Controls.Add(this.imageBox13);
             this.tabPage6.Controls.Add(this.imageBox12);
             this.tabPage6.Location = new System.Drawing.Point(4, 25);
             this.tabPage6.Name = "tabPage6";
@@ -376,6 +381,25 @@
             this.imageBox12.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.imageBox12.TabIndex = 4;
             this.imageBox12.TabStop = false;
+            // 
+            // imageBox13
+            // 
+            this.imageBox13.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.imageBox13.FunctionalMode = Emgu.CV.UI.ImageBox.FunctionalModeOption.Minimum;
+            this.imageBox13.Location = new System.Drawing.Point(812, 6);
+            this.imageBox13.Name = "imageBox13";
+            this.imageBox13.Size = new System.Drawing.Size(800, 450);
+            this.imageBox13.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.imageBox13.TabIndex = 5;
+            this.imageBox13.TabStop = false;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(6, 462);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(1632, 222);
+            this.textBox1.TabIndex = 7;
             // 
             // Form1
             // 
@@ -413,7 +437,9 @@
             this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabPage6.ResumeLayout(false);
+            this.tabPage6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox12)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imageBox13)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -448,6 +474,8 @@
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TabPage tabPage6;
         private Emgu.CV.UI.ImageBox imageBox12;
+        private Emgu.CV.UI.ImageBox imageBox13;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }
 
